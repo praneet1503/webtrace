@@ -40,6 +40,7 @@ async def fetch_wayback(domain: str):
                     "output": "json",
                     "fl": "timestamp",
                     "filter": "statuscode:200",
+                    "collapse" : "timestamp:4",
                     "limit": 5000,
                     "showResumeKey": "true"
                 }
@@ -113,37 +114,45 @@ def health_check():
     return JSONResponse(content={"status":"online"},status_code=200)
 
 @app.get("/snapshots")
-async def get_snapshots(domain:str,year:str):
-    url="https://web.archive.org/cdx/search/cdx"
+async def get_snapshots(domain: str, year: str):
+    # Clean the domain
+    clean_domain = domain.replace("https://", "").replace("http://", "").replace("www.", "")
+    
+    # Try exact domain, then www. Exact match is 100x FASTER than using a wildcard (*.)
+    query_domains = [clean_domain, f"www.{clean_domain}"]
+    url = "https://web.archive.org/cdx/search/cdx"
 
-    params = {
-        "url":domain,
-        "from":year,
-        "to":year,
-        "output":"json",
-        "fl":"timestamp",
-        "filter":"statuscode:200",
-        "collapse": "timestamp:8",
-        "limit":50
-    }
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url,params=params)
-            response.raise_for_status()
-            data = response.json()
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for q_domain in query_domains:
+            params = {
+                "url": q_domain,
+                "from": year,
+                "to": year,
+                "output": "json",
+                "fl": "timestamp",
+                "filter": "statuscode:200",
+                "collapse": "timestamp:8",
+                "limit": 50
+            }
+            try:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                data = response.json()
 
-            if not data or len(data) <=1:
-                return {"snapshots":[]}
-            
-            snapshots=[]
-            for row in data[1:]:
-                timestamp = row[0]
-                formatted_date=f"{timestamp[:4]}-{timestamp[4:6]}-{timestamp[6:8]}"
-                snapshots.append({
-                    "timestamp":timestamp,
-                    "date":formatted_date
-                })
-            return {"snapshots": snapshots}
-        except Exception as e:
-            print(f"Error fetching snapshots: {e}")
-            return{"snapshots":[],"error":str(e)}
+                # If valid data found (more than just the header), process and return immediately!
+                if data and len(data) > 1:
+                    snapshots = []
+                    for row in data[1:]:
+                        timestamp = row[0]
+                        formatted_date = f"{timestamp[:4]}-{timestamp[4:6]}-{timestamp[6:8]}"
+                        snapshots.append({
+                            "timestamp": timestamp,
+                            "date": formatted_date
+                        })
+                    return {"snapshots": snapshots}
+            except Exception as e:
+                print(f"Warning fetching snapshots for {q_domain}: {e}")
+                continue # If it fails or times out, try the next domain in the loop
+                
+    # If all attempts fail or return empty
+    return {"snapshots": []}
