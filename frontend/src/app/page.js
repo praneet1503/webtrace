@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-
+const API_BASE=process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 export default function Home() {
   const [domain, setDomain] = useState("");
   const [timeline, setTimeline] = useState([]);
@@ -14,9 +14,9 @@ export default function Home() {
     console.log("searchTimeline ->", domain);
 
     try {
-      const url = `http://localhost:8000/timeline?domain=${encodeURIComponent(domain)}`;
+      const url = `${API_BASE}/timeline?domain=${encodeURIComponent(domain)}`;
       console.log("Fetching URL:", url);
-      const res = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" }});
+      const res = await fetch(url);
       console.log("Response status:", res.status);
       if (!res.ok) {
         const text = await res.text();
@@ -42,7 +42,7 @@ useEffect(()=>{
   let mounted = true;
   async function check(){
     try{
-      const res = await fetch("http://localhost:8000/health");
+      const res = await fetch(`${API_BASE}/health`);
       if (!mounted) return;
       setBackendStatus(res.ok ? "Online": "Error");
     } catch {
