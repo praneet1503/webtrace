@@ -19,9 +19,9 @@ app.add_middleware(
 
 # cache results for 1 hour
 cache = TTLCache(maxsize=300, ttl=3600)
-
+snapshot_cache = TTLCache(maxsize=1000,ttl=3600)
 WAYBACK_API = "https://web.archive.org/cdx/search/cdx"
-
+client = httpx.AsyncClient(timeout=20)
 
 async def fetch_wayback(domain: str):
 
@@ -29,7 +29,7 @@ async def fetch_wayback(domain: str):
     query_domains = [f"*.{domain}", domain]  # try wildcard first, then plain domain
     years = set()
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with client as client_session:
 
         for query_domain in query_domains:
             resume_key = None
@@ -41,7 +41,7 @@ async def fetch_wayback(domain: str):
                     "fl": "timestamp",
                     "filter": "statuscode:200",
                     "collapse" : "timestamp:4",
-                    "limit": 5000,
+                    "limit": 2000,
                     "showResumeKey": "true"
                 }
 
@@ -49,7 +49,7 @@ async def fetch_wayback(domain: str):
                     params["resumeKey"] = resume_key
 
                 try:
-                    r = await client.get(WAYBACK_API, params=params)
+                    r = await client_session.get(WAYBACK_API, params=params)
                     r.raise_for_status()
                     data = r.json()
                 except Exception as e:
@@ -112,7 +112,7 @@ async def get_timeline(domain: str):
 @app.get("/health")
 def health_check():
     return JSONResponse(content={"status":"online"},status_code=200)
-
+        
 @app.get("/snapshots")
 async def get_snapshots(domain: str, year: str):
     # Clean the domain
@@ -122,7 +122,7 @@ async def get_snapshots(domain: str, year: str):
     query_domains = [clean_domain, f"www.{clean_domain}"]
     url = "https://web.archive.org/cdx/search/cdx"
 
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with client as client_session:
         for q_domain in query_domains:
             params = {
                 "url": q_domain,
@@ -135,7 +135,7 @@ async def get_snapshots(domain: str, year: str):
                 "limit": 50
             }
             try:
-                response = await client.get(url, params=params)
+                response = await client_session.get(url, params=params)
                 response.raise_for_status()
                 data = response.json()
 
