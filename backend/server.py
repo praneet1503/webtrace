@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI,Query
 from fastapi.middleware.cors import CORSMiddleware
 from cachetools import TTLCache
 import httpx
@@ -111,3 +111,39 @@ async def get_timeline(domain: str):
 @app.get("/health")
 def health_check():
     return JSONResponse(content={"status":"online"},status_code=200)
+
+@app.get("/snapshots")
+async def get_snapshots(domain:str,year:str):
+    url="https://web.archive.org/cdx/search/cdx"
+
+    params = {
+        "url":domain,
+        "from":year,
+        "to":year,
+        "output":"json",
+        "fl":"timestamp",
+        "filter":"statuscode:200",
+        "collapse": "timestamp:8",
+        "limit":50
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url,params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if not data or len(data) <=1:
+                return {"snapshots":[]}
+            
+            snapshots=[]
+            for row in data[1:]:
+                timestamp = row[0]
+                formatted_date=f"{timestamp[:4]}-{timestamp[4:6]}-{timestamp[6:8]}"
+                snapshots.append({
+                    "timestamp":timestamp,
+                    "date":formatted_date
+                })
+            return {"snapshots": snapshots}
+        except Exception as e:
+            print(f"Error fetching snapshots: {e}")
+            return{"snapshots":[],"error":str(e)}

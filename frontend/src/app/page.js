@@ -55,7 +55,7 @@ const id = setInterval(check,10000);
 return () => {mounted=false;clearInterval(id);};
 },[]);
   return (
-    <main className="min-h-screen p-10 bg-black text-white">
+    <main className="min-h-screen p-10 bg-black text-white flex flex-col">
       <h1 className="text-4xl font-bold mb-4">Webtime, The Archive of websites</h1>
       <p className="text-gray-400 mb-8">It shows you the timeline of the website from start till the end</p>
 
@@ -80,7 +80,19 @@ return () => {mounted=false;clearInterval(id);};
           </div>
         ))}
       </div>
-      <div id="backend-status">Backend:{backendStatus}</div>
+      
+      <div className="flex justify-between items-center mt-8">
+        <div>
+          <p className="text-white"><strong>Did you Know?</strong></p>
+          <p className="text-gray-50 px-2">the first web page was created by tim berners-lee,the creator of the great world wide web</p>
+          <p className="text-gray-50 px-4">he basically created the html language.</p>
+        </div>
+        <div id="backend-status" className="text-white">Backend: {backendStatus}</div>
+      </div>
+
+      <footer className="mt-10 text-center text-gray-500 fixed bottom-0 w-full py-20">
+        <p>created with ❤️ by praneet (prentz)</p>
+      </footer>
     </main>
   );
 }
