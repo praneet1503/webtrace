@@ -23,11 +23,6 @@ def ensure_cache_files():
         with open(SNAPSHOT_FILE,"w",newline="") as f:
             csv.writer(f).writerow(["domain","year","timestamp"])
 
-
-# ---------------------------------------------------------------------------
-#  Timeline cache
-# ---------------------------------------------------------------------------
-
 def get_timeline_from_memory(domain: str) -> List[str] | None:
     return timeline_mem.get(domain)
 
@@ -37,11 +32,10 @@ def get_timeline_from_disk(domain: str) -> List[str] | None:
         return None
     try:
         from wayback import clean_domain
-        search_target = clean_domain(domain) # turn "www.youtube.com" -> "youtube.com"
+        search_target = clean_domain(domain) 
 
         with open(TIMELINE_FILE, "r") as f:
             for row in csv.DictReader(f):
-                # Clean the domain in the CSV row too
                 cached_domain = clean_domain(row.get("domain", ""))
                 if cached_domain == search_target:
                     years_str = row.get("years", "")
@@ -53,22 +47,17 @@ def get_timeline_from_disk(domain: str) -> List[str] | None:
         logging.warning("Failed to read timeline disk cache for %s: %s", domain, exc)
     return None
 
-
 def save_timeline(domain: str, years: List[str]):
-    # Ensure years are strings and joined by |
     years_string = "|".join(str(y).strip() for y in years)
     timeline_mem[domain] = years
-
     if not TIMELINE_FILE.exists():
         return
-        
     try:
         rows = []
         with open(TIMELINE_FILE, "r") as f:
             for row in csv.DictReader(f):
                 if row.get("domain") != domain:
                     rows.append(row)
-                    
         rows.append({"domain": domain, "years": years_string})
         with open(TIMELINE_FILE, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=["domain", "years"])

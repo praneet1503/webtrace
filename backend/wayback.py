@@ -89,7 +89,6 @@ async def fetch_timeline(domain: str) -> List[str]:
 async def fetch_snapshots(domain: str, year: str) -> list:
     cleaned = clean_domain(domain)
     targets = [f"{cleaned}/", f"www.{cleaned}/"]
-    
     snapshots = []
     for target in targets:
         params = {
@@ -101,7 +100,6 @@ async def fetch_snapshots(domain: str, year: str) -> list:
             "collapse": "timestamp:8",
         }
         rows = await _paginated_fetch(params)
-        
         if rows:
             for row in rows:
                 if not isinstance(row, list) or len(row) < 2:
@@ -109,7 +107,6 @@ async def fetch_snapshots(domain: str, year: str) -> list:
                 ts, original = row[0], row[1]
                 if not isinstance(ts, str) or len(ts) < 8:
                     continue
-                
                 snapshots.append({
                     "timestamp": ts,
                     "date": f"{ts[:4]}-{ts[4:6]}-{ts[6:8]}",

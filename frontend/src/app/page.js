@@ -328,7 +328,7 @@ export default function Home() {
 
                         <form
                             onSubmit={handleTrace}
-                            className="mx-auto mt-6 grid w-full max-w-[740px] grid-cols-[1fr_auto] gap-3"
+                            className="mx-auto mt-6 grid w-full max-w-185 grid-cols-[1fr_auto] gap-3"
                         >
                             <input
                                 type="text"
@@ -353,7 +353,7 @@ export default function Home() {
                     </section>
                     <p>yeah it is kind of slow so i need you to have some patience in here please</p>
                     <section className="mt-4 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
-                        <div className="min-h-[500px] border border-[#2f2f2f] bg-[#131313] p-3">
+                        <div className="min-h-125 border border-[#2f2f2f] bg-[#131313] p-3">
                             <div className="h-full w-full border border-[#242424] bg-[#121212] p-4">
                                 <p className="text-[12px] uppercase tracking-[0.12em] text-[#8b8a84]">
                                     Timeline {activeDomain ? `for ${activeDomain}` : ""}
@@ -382,7 +382,7 @@ export default function Home() {
 
                                         <div className="mt-3 border-t border-[#2a2a2a] pt-3">
                                             <div className="flex items-center justify-between gap-3">
-                                                <p className="text-[11px] uppercase tracking-[0.1em] text-[#8b8a84]">
+                                                <p className="text-[11px] uppercase tracking-widest text-[#8b8a84]">
                                                     Year slider {selectedYear ? `(${selectedYear})` : ""}
                                                 </p>
                                                 <button
@@ -421,7 +421,7 @@ export default function Home() {
                                         </div>
 
                                         <div className="mt-4 border-t border-[#2a2a2a] pt-3">
-                                            <p className="text-[11px] uppercase tracking-[0.1em] text-[#8b8a84]">
+                                            <p className="text-[11px] uppercase tracking-widest text-[#8b8a84]">
                                                 Snapshots {selectedYear ? `(${selectedYear})` : ""}
                                             </p>
                                             {snapshotsLoading && (
@@ -431,7 +431,7 @@ export default function Home() {
                                                 <p className="mt-3 text-[13px] text-[#9a827a]">{snapshotError}</p>
                                             )}
                                             {!snapshotsLoading && !snapshotError && snapshots.length > 0 && (
-                                                <div className="mt-3 max-h-[290px] space-y-2 overflow-auto pr-1">
+                                                <div className="mt-3 max-h-72.5 space-y-2 overflow-auto pr-1">
                                                     {snapshots.map((snapshot) => {
                                                         const ts = snapshot.timestamp || "";
                                                         const datePart = snapshot.date || ts.slice(0, 8);
@@ -466,7 +466,7 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <aside className="min-h-[500px] border border-[#2f2f2f] bg-[#131313] p-3">
+                        <aside className="min-h-125 border border-[#2f2f2f] bg-[#131313] p-3">
                             <div className="flex h-full flex-col gap-3">
                                 <div className="flex-1">
                                     {previewUrl ? (
@@ -475,7 +475,7 @@ export default function Home() {
                                                 title="Wayback Preview"
                                                 src={previewUrl}
                                                 onLoad={handlePreviewLoad}
-                                                className="h-full min-h-[470px] w-full bg-white"
+                                                className="h-full min-h-117.5 w-full bg-white"
                                             />
                                         </div>
                                     ) : (
