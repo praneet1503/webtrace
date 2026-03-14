@@ -1,32 +1,84 @@
-export default function TimelineGrid({years,doamin}) {
-    if(!years || years.length === 0) {
-        return (
-            <p className="text-gray-400">
-                No archive found.
-            </p>
-        );
+"use client";
+
+export default function TimelineGrid({
+    years,
+    selectedYear,
+    onScrubYear,
+    onSelectYear,
+    onStepYear,
+    onTogglePlay,
+    isPlaying,
+}) {
+    if (!years || years.length === 0) {
+        return null;
     }
+
+    const selectedIndex = Math.max(0, years.indexOf(String(selectedYear)));
+    const firstYear = years[0];
+    const latestYear = years[years.length - 1];
+
     return (
-        <div className="grid grid-cols-4 gap-4 mt-6">
-            {years.map((year) => {
-                const snapshotUrl = `https://web.archive.org/web/${year}0101000000/${domain}`;
-                return (
-                    <a 
-                     key={year}
-                     href={snapshotUrl}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="bg-gray-900 p-5 rounded hover:bg-800 transition"
-                     >
-                        <div className="text-2xl font-bold">
-                            {year}
-                        </div>
-                        <p className="text-gray text-sm">
-                            View snapshot
-                        </p>
-                     </a>
-                );
-            })}
-        </div>
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold text-zinc-100">Website history timeline</h2>
+                <button
+                    type="button"
+                    onClick={onTogglePlay}
+                    className="rounded-md border border-zinc-700 px-3 py-1 text-xs font-semibold tracking-wide text-zinc-200 hover:border-zinc-500"
+                >
+                    {isPlaying ? "STOP" : "PLAY HISTORY"}
+                </button>
+            </div>
+
+            <div
+                className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
+                onWheel={(event) => {
+                    event.preventDefault();
+                    onStepYear(event.deltaY > 0 ? 1 : -1);
+                }}
+            >
+                <input
+                    aria-label="Timeline year"
+                    type="range"
+                    min={0}
+                    max={Math.max(0, years.length - 1)}
+                    value={selectedIndex}
+                    onChange={(event) => {
+                        const nextIndex = Number(event.target.value);
+                        onScrubYear(years[nextIndex]);
+                    }}
+                    onKeyDown={(event) => {
+                        if (event.key === "ArrowRight") onStepYear(1);
+                        if (event.key === "ArrowLeft") onStepYear(-1);
+                    }}
+                    className="w-full"
+                />
+
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                    {years.map((year) => {
+                        const isActive = String(selectedYear) === String(year);
+                        return (
+                            <button
+                                key={year}
+                                type="button"
+                                onClick={() => onSelectYear(year)}
+                                className={`rounded-md border px-3 py-1 text-sm transition ${
+                                    isActive
+                                        ? "border-sky-500 bg-sky-500/20 text-sky-200"
+                                        : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
+                                }`}
+                            >
+                                {year}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400">
+                <p>First snapshot: {firstYear}</p>
+                <p>Latest snapshot: {latestYear}</p>
+            </div>
+        </section>
     );
 }
