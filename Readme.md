@@ -13,7 +13,7 @@ vercel for frontend hosting
 # how to run this
 clone the repo 
 ```zsh
-git clone https://github.com/praneet1503/website-timeline.git
+git clone https://github.com/praneet1503/webtrace.git
 ```
 then cd into the backend and frontend folders and run the respective start commands
 ```zsh
